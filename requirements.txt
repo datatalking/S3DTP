@@ -1,0 +1,3 @@
+pip install blosc
+pip install psutil
+pip install pycryptodome
