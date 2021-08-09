@@ -27,8 +27,13 @@ import math
 # OS Stuff
 import os
 
+# Tracing
+import logging
+
 # Users
 from .User import User
+
+logging.basicConfig(filename='Server.log', filemode="a", encoding='utf-8', level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %H:%M:%S')
 
 class Server:
     def __init__(self, iph="", encryption=True, maxPeers=-1):
@@ -46,6 +51,7 @@ class Server:
         self.memstorage = {}
         self.lastChanged = None
         self.peers = 0
+        logging.info("Server started.")
         if encryption:
             self._private = RSA.generate(2048)
             self._decryptor = PKCS1_OAEP.new(self._private)
@@ -149,7 +155,7 @@ class Server:
                             sock.sendall(data + b'\xAA' + b'\xBB' + b'\xCC' + b'\xDD' + b'\xEE' + b'\xFF')
                             fileIO.close()
                         except Exception as e:
-                            print(e)
+                            logging.info(e)
                             sock.send(b'2')
                 else:
                     # List dir
@@ -202,7 +208,8 @@ class Server:
                                 sock.send(b'0')
                             fileIO.close()
                         self.lastChanged = connectedUser._path + b'/' + request[2:request.find(b'\xFF')]
-                    except:
+                    except Exception as e:
+                        logging.info(e)
                         sock.send(b'2')
                 elif (request[1:2] == b'1'):
                     size = int(request[request.find(b'\xFF') + 1: request.find(b'\xFF') + 1 + request[request.find(b'\xFF') + 1:].find(b'\xFF')])
