@@ -28,6 +28,11 @@ import math
 # OS Stuff
 import os
 
+# Tracing
+import logging
+
+logging.basicConfig(filename='Client.log', filemode="a", encoding='utf-8', level=logging.info, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %H:%M:%S')
+
 class Client:
     def __init__(self, iph, user="", password=""):
         self._user = user
@@ -120,7 +125,7 @@ class Client:
             time.sleep(0.001)
             response = self._sock.recv(1)
         if (response != b'0'):
-            # Add to log
+            logging.info(response)
             return False
         file = open(filepath, "rb")
         if (mode == 0):
@@ -158,8 +163,7 @@ class Client:
             time.sleep(0.001)
             response = self._sock.recv(1)
         if (response != b'0'):
-            # Add to log
-            print(response)
+            logging.info(response)
             return False
         data = blosc.compress(data, cname="blosclz")
         if (self._is_encrypted):
@@ -180,9 +184,8 @@ class Client:
             time.sleep(0.001)
             response = self._sock.recv(2)
         if (response[0:1] != b'0'):
-            # Add to log
-            print(response)
-            return b''
+            logging.info(response)
+            return b'\xFF'
         if (len(response) > 1):
             if (filename == ""):
                 filename = name
@@ -213,8 +216,9 @@ class Client:
                         if (i != (count - 1)):
                             self._sock.send(b'0')
                     fileIO.close()
-            except:
-                raise Exception("Could not save to file.")
+                return b''
+            except Exception as e:
+                logging.info(e)
         else:
             data = self._sock.recv(100000)
             while ((b'\xAA' + b'\xBB' + b'\xCC' + b'\xDD' + b'\xEE' + b'\xFF') not in data):
@@ -226,7 +230,7 @@ class Client:
                 data = data[:len(data) - 6]
             return blosc.decompress(data)
 
-    # Gets a list of files and directories *** Not yet implemented
+    # Gets a list of files and directories
     def ls(self, mode=0, subdir=""):
         if ((mode == 0) & (subdir == "")):
             subdir = b'./'

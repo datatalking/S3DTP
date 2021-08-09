@@ -1,4 +1,4 @@
-import ..S3DTP as dt
+import S3DTP as dt
 
 data = b'Testing this code.'
 
