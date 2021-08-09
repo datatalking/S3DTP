@@ -133,7 +133,7 @@ class Client:
                     time.sleep(0.001)
             data = blosc.compress(file.read(1000000000), cname="blosclz")
             if (self._is_encrypted):
-                data =Salsa20.new(self._key, random.randbytes(8)).encrypt(data)
+                data = Salsa20.new(self._key, random.randbytes(8)).encrypt(data)
             self._sock.sendall(data + b'\xAA' + b'\xBB' + b'\xCC' + b'\xDD' + b'\xEE' + b'\xFF')
             while (self._sock.recv(1) == b''):
                 time.sleep(0.001)
@@ -194,21 +194,24 @@ class Client:
                 os.makedirs(os.path.dirname(os.getcwd() + "/" + filename), exist_ok=True)
                 fileIO = open(filename, "ab")
                 self._sock.send(b'0')
+                count = int(response[1:])
                 if (self._is_encrypted):
-                    for i in range(int(response[1:])):
+                    for i in range(count):
                         data = self._sock.recv(100000)
                         while ((b'\xAA' + b'\xBB' + b'\xCC' + b'\xDD' + b'\xEE' + b'\xFF') not in data):
                             data += self._sock.recv(100000)
                         fileIO.write(blosc.decompress(Salsa20.new(self._key, random.randbytes(8)).decrypt(data[:len(data) - 6])))
-                        self._sock.send(b'0')
+                        if (i != (count - 1)):
+                            self._sock.send(b'0')
                     fileIO.close()
                 else:
-                    for i in range(int(response[1:])):
+                    for i in range(count):
                         data = self._sock.recv(100000)
                         while ((b'\xAA' + b'\xBB' + b'\xCC' + b'\xDD' + b'\xEE' + b'\xFF') not in data):
                             data += self._sock.recv(100000)
                         fileIO.write(blosc.decompress(data[:len(data) - 6]))
-                        self._sock.send(b'0')
+                        if (i != (count - 1)):
+                            self._sock.send(b'0')
                     fileIO.close()
             except:
                 raise Exception("Could not save to file.")
@@ -228,20 +231,19 @@ class Client:
         if ((mode == 0) & (subdir == "")):
             subdir = b'./'
         elif (mode == 1):
-            print("uh")
             subdir = b'\xEE'
         else:
             subdir = bytes(subdir, "utf8")
         if (self._is_encrypted):
-            self._sock.send(Salsa20.new(self._key, random.randbytes(8)).encrypt(b'01' + subdir + (b'\xFF' * (253 - len(subdir)))))
+            self._sock.send(Salsa20.new(self._key, random.randbytes(8)).encrypt(b'01' + subdir + (b'\xFF' * (254 - len(subdir)))))
         else:
-            self._sock.send(b'01' + bytes(subdir, "utf8") + (b'\xFF' * (253 - len(subdir))))
+            self._sock.send(b'01' + subdir + (b'\xFF' * (254 - len(subdir))))
         data = self._sock.recv(100000)
         while ((b'\xAA' + b'\xBB' + b'\xCC' + b'\xDD' + b'\xEE' + b'\xFF') not in data):
             time.sleep(0.001)
             data += self._sock.recv(100000)
         if (self._is_encrypted):
-                data = Salsa20.new(self._key, random.randbytes(8)).decrypt(data[:len(data) - 6])
+            data = Salsa20.new(self._key, random.randbytes(8)).decrypt(data[:len(data) - 6])
         else:
             data = data[:len(data) - 6]
         return eval(data)
@@ -249,9 +251,9 @@ class Client:
     # Deletes file, folder, or memory
     def rm(self, path):
         if (self._is_encrypted):
-             self._sock.send(Salsa20.new(self._key, random.randbytes(8)).encrypt(b'12' + bytes(path, "utf8") + (b'\xFF' * (253 - len(path)))))
+            self._sock.send(Salsa20.new(self._key, random.randbytes(8)).encrypt(b'12' + bytes(path, "utf8") + (b'\xFF' * (254 - len(path)))))
         else:
-            self._sock.send(b'12' + bytes(path, "utf8") + (b'\xFF' * (253 - len(path))))
+            self._sock.send(b'12' + bytes(path, "utf8") + (b'\xFF' * (254 - len(path))))
         response = self._sock.recv(1)
         while (response == b''):
             time.sleep(0.001)
