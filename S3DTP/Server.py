@@ -44,6 +44,7 @@ class Server:
         self._max = maxPeers
         self._users = []
         self.memstorage = {}
+        self.lastChanged = None
         self.peers = 0
         if encryption:
             self._private = RSA.generate(2048)
@@ -116,7 +117,6 @@ class Server:
                 request = sock.recv(256)
             if (self._encrypt):
                 request = Salsa20.new(key, random.randbytes(8)).decrypt(request)
-            print(request)
             # Read
             if (request[:1] == b'0'):
                 if (connectedUser._level == 1):
@@ -152,10 +152,8 @@ class Server:
                             print(e)
                             sock.send(b'2')
                 else:
-                    print("Hello?")
                     # List dir
                     if (request[2:request.find(b'\xFF')] == b'\xEE'):
-                        print("yo")
                         data = bytes(str(list(self.memstorage.keys())), "utf8")
                         if (self._encrypt):
                             sock.sendall(Salsa20.new(key, random.randbytes(8)).encrypt(data) + b'\xAA' + b'\xBB' + b'\xCC' + b'\xDD' + b'\xEE' + b'\xFF')
@@ -175,8 +173,8 @@ class Server:
                 if (connectedUser._level == 0):
                     sock.send(b'1')
                     continue
-                size = int(request[request.find(b'\xFF') + 1: request.find(b'\xFF') + 1 + request[request.find(b'\xFF') + 1:].find(b'\xFF')])
                 if (request[1:2] == b'0'):
+                    size = int(request[request.find(b'\xFF') + 1: request.find(b'\xFF') + 1 + request[request.find(b'\xFF') + 1:].find(b'\xFF')])
                     try:
                         try:
                             os.remove(connectedUser._path + b'/' + request[2:request.find(b'\xFF')])
@@ -195,7 +193,6 @@ class Server:
                                 sock.send(b'0')
                             fileIO.close()
                         else:
-                            os.rmdir(connectedUser._path + request[2:request.find(b'\xFF')])
                             for i in range(math.ceil(size / 1000000000)):
                                 data = sock.recv(100000)
                                 while ((b'\xAA' + b'\xBB' + b'\xCC' + b'\xDD' + b'\xEE' + b'\xFF') not in data):
@@ -204,10 +201,11 @@ class Server:
                                 fileIO.write(blosc.decompress(data[:len(data) - 6]))
                                 sock.send(b'0')
                             fileIO.close()
-                            sock.send(b'0')
+                        self.lastChanged = connectedUser._path + b'/' + request[2:request.find(b'\xFF')]
                     except:
                         sock.send(b'2')
                 elif (request[1:2] == b'1'):
+                    size = int(request[request.find(b'\xFF') + 1: request.find(b'\xFF') + 1 + request[request.find(b'\xFF') + 1:].find(b'\xFF')])
                     if (size > ps.virtual_memory().inactive):
                         sock.send(b'3')
                         continue
@@ -222,8 +220,8 @@ class Server:
                         data = data[:len(data) - 6]
                     self.memstorage[request[2:request.find(b'\xFF')]] = blosc.decompress(data)
                     sock.send(b'0')
+                    self.lastChanged = request[2:request.find(b'\xFF')]
                 else:
-                    print("LOL")
                     try:
                         del self.memstorage[request[2:request.index(b'\xFF')]]
                         sock.send(b'0')
