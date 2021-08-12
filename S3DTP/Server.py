@@ -11,8 +11,6 @@ from Crypto.Cipher import Salsa20
 from Crypto import Random
 
 # Concurrency/Async
-import aiofile
-import asyncio
 import threading
 
 # Memory Management
