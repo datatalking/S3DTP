@@ -1,6 +1,18 @@
 # S3DTP
 S3DTP is the Simple Secure Socket Data Transport Protocol.
 
+How to install:
+  - Clone this repo however you like. 
+  - Go into the extracted/cloned folder and run ```python3 -m pip install -r requirements.txt``` followed by ```python3 -m pip install .```
+  - You're all set!
+
+How to read the argument comments:
+  - ```Optional:``` indicates that you don't need to pass the argument for the command to run but you may need to if you are trying to invoke specific behavior. Passing an optional argument is done by ```your_arg_name_here=your_value_here```.
+  - The first word indicates the data type that is required for proper functionality.
+  - The second word is the arg name. This is not neccessary for required arguments but is for optional ones.
+  - After that are comments showing the default value and what it does where neccessary. 
+  - Comma indicawted a new argument
+
 Documentation:
 ```python
 class User:
@@ -10,6 +22,12 @@ class User:
     # Return type: None
 
 class Server:
+
+  # This is where the write to memory operations are stored. It is a dictionary with a mapping of the bytestring name and the bytes data that was recieved
+  memstorage = {}
+  
+  # Stores the value of the last changed value
+  lastChanged = b''
 
   # Starts server
   def __init__(string IP Address, Optional: bool encryption (True by default), Optional: int maxPeers (-1 by default (unlimited))):
@@ -51,4 +69,32 @@ class Client:
 
 ```
 
-Both the client and server will have loggers for posting bugs/tracing problems. 
+A quick start example for a server (That prints new messages written to memory):
+```python
+
+import S3DTP at dt
+
+# Starts an encrypted server
+server = dt.Server()
+
+# Adds a user to the server. This user has no name, no password, uses the running directory to store files, and can read and write.
+server.addUser(dt.User(access = dt.RW))
+
+# Makes a variable to store the previously changed value
+last = server.lastChanged
+
+while True:
+  # Blocks until change occurs
+  while (last == server.lastChanged):
+    time.sleep(0.01)
+  # Will attempt to print from memstorage with the last changed value
+  try:
+    print(server.memstorage[server.lastChanged])
+  # Which will fail if the name is a file or doesn't exist
+  except:
+    pass
+  last = server.lastChanged
+
+```
+
+Both the client and server have loggers for posting bugs/tracing problems. 
