@@ -4,40 +4,40 @@ data = b'Testing this code.'
 
 client = dt.Client("localhost")
 
-print(client.write_from_file("cTest.txt", name="WFFTF.txt"))
-print(client.write_from_file("cTest.txt", mode=dt.MEM, name="WFFTM"))
-print(client.write_from_memory(data, name="WFMTF.txt"))
-print(client.write_from_memory(data, mode=dt.MEM, name="WFMTM"))
+print(client.write_from_file("cTest.txt", name="Write_from_file_to_file.txt.txt"))
+print(client.write_from_file("cTest.txt", mode=dt.MEM, name="Write_from_file_to_memory"))
+print(client.write_from_memory(data, name="_Write_from_memory_to_file.txt"))
+print(client.write_from_memory(data, mode=dt.MEM, name="Write_from_memory_to_memory"))
 
-client.read("WFFTF.txt", filename="_WFFTF.txt")
-f = open("_WFFTF.txt", "rb")
+client.read("Write_from_file_to_file.txt", filename="_Write_from_file_to_file.txt")
+f = open("_Write_from_file_to_file.txt", "rb")
 if (f.read() == data):
     print("Pass")
 else:
     print("Fail")
 f.close()
-if (client.read("WFFTM") == data):
+if (client.read("Write_from_file_to_memory") == data):
     print("Pass")
 else:
     print("Fail")
-client.read("WFMTF.txt", filename="_WFMTF.txt")
-f = open("_WFMTF.txt", "rb")
+client.read("Write_from_memory_to_file.txt", filename="_Write_from_memory_to_file.txt")
+f = open("_Write_from_memory_to_file.txt", "rb")
 if (f.read() == data):
     print("Pass")
 else:
     print("Fail")
 f.close()
-if (client.read("WFMTM") == data):
+if (client.read("Write_from_memory_to_memory") == data):
     print("Pass")
 else:
     print("Fail")
 print(client.ls())
-print(client.rm("_WFFTF.txt"))
+print(client.rm("_Write_from_file_to_file.txt"))
 print(client.ls(mode=1))
-print(client.rm("WFFTM"))
+print(client.rm("Write_from_file_to_memory"))
 print(client.ls())
-print(client.rm("_WFMTF.txt"))
+print(client.rm("_Write_from_memory_to_file.txt"))
 print(client.ls(mode=1))
-print(client.rm("WFMTM"))
+print(client.rm("Write_from_memory_to_memory"))
 print(client.ls())
 print(client.ls(mode=1))
