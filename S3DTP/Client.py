@@ -12,8 +12,6 @@ from Crypto import Random
 import random
 
 # Concurrency/Async
-import aiofile
-import asyncio
 import threading
 
 # Memory Management
