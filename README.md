@@ -75,7 +75,8 @@ class Client:
 A quick start example for a server (That prints new messages written to memory):
 ```python
 
-import S3DTP at dt
+import S3DTP as dt
+import time
 
 # Starts an encrypted server that is binded to LAN
 server = dt.Server("")
