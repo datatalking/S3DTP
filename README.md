@@ -28,6 +28,9 @@ class Server:
   
   # Stores the value of the last changed value
   lastChanged = b''
+  
+  # Stores the number of active connections
+  peers = 0
 
   # Starts server
   def __init__(string IP Address, Optional: bool encryption (True by default), Optional: int maxPeers (-1 by default (unlimited))):
@@ -74,8 +77,8 @@ A quick start example for a server (That prints new messages written to memory):
 
 import S3DTP at dt
 
-# Starts an encrypted server
-server = dt.Server()
+# Starts an encrypted server that is binded to LAN
+server = dt.Server("")
 
 # Adds a user to the server. This user has no name, no password, uses the running directory to store files, and can read and write.
 server.addUser(dt.User(access = dt.RW))
@@ -97,4 +100,24 @@ while True:
 
 ```
 
+A quick start example for a client to match the above example:
+```python
+
+import S3DTP at dt
+
+# Connects to the server at localhost
+client = dt.Client("localhost")
+
+# Used to generate names
+counter = 0
+while True:
+  # Grabs input from user
+  userInput = input("What message do you want to send to the server? ")
+  
+  # Sends the message to the server indicating a write to memory. The name is the counter number. 
+  client.write_from_memory(bytes(userInput, "utf8"), mode=dt.MEM, name=str(counter))
+  # Increment counter
+  counter+=1
+
+```
 Both the client and server have loggers for posting bugs/tracing problems. 
